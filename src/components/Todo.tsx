@@ -1,10 +1,13 @@
-import { Item } from '@/types';
 import { useRef, useState, useEffect } from 'react';
+import { MdDeleteOutline } from "react-icons/md";
+import { FaEdit, FaCheck } from "react-icons/fa";
+import { GiCancel } from "react-icons/gi";
+import { Item } from '@/types';
 
 interface TodoProps {
   item: Item;
   onUpdate: (id: string, newValue: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Item[];
   onCompleted: (id: string) => void;
 }
 
@@ -16,6 +19,7 @@ export default function Todo({
 }: TodoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const itemRef = useRef<HTMLLIElement>(null)
 
   useEffect(() => {
     if (isEditing && editInputRef.current) {
@@ -29,7 +33,12 @@ export default function Todo({
     };
 
     const handleDelete = () => {
-      onDelete(item.id);
+      itemRef.current?.classList.add("deleted");
+      //necesito un array con los elemento que estan debajo del item que estoy borrando
+
+      setTimeout(() => {
+        onDelete(item.id); // Eliminar el elemento después de la animación
+      }, 300); // Esperar 300ms (0.3 segundos) para que la animación se complete
     };
 
     const handleComplete = () => {
@@ -37,18 +46,27 @@ export default function Todo({
     };
 
     return (
-      <div className="task">
-        <input
-          type="checkbox"
-          id={item.id}
-          checked={item.completed}
-          onChange={handleComplete}
-        />
-        <label htmlFor={item.id} className={item.completed ? 'completed' : ''}>
-          {item.task}
-        </label>
-        <button onClick={handleEdit}>Edit</button>
-        <button onClick={handleDelete}>Delete</button>
+      <div className="item">
+        <div className='itemCheckText'>
+          <input
+            type="checkbox"
+            id={item.id}
+            checked={item.completed}
+            onChange={handleComplete}
+          />
+          <label htmlFor={item.id} className={item.completed ? 'completed' : ''}>
+            {item.task}
+          </label>
+        </div>
+
+        <div className='itemButtons'>
+          <button onClick={handleEdit}>
+            <FaEdit className='itemButtonsIconEdit' />
+          </button>
+          <button onClick={handleDelete}>
+            <MdDeleteOutline className='itemButtonsIconDelete' />
+          </button>
+        </div>
       </div>
     );
   }
@@ -58,8 +76,13 @@ export default function Todo({
 
     const handleUpdate = () => {
       //recoger el nuevo valor de la tarea y modificarla en el array de items)
-      onUpdate(item.id, taskValue);
-      setIsEditing(false);
+      if (taskValue) {
+        onUpdate(item.id, taskValue);
+        setIsEditing(false);
+      } else {
+        alert("El Item no puede quedar vacio")
+      }
+
     };
 
     const handleCancel = () => {
@@ -79,8 +102,9 @@ export default function Todo({
     };
 
     return (
-      <div>
+      <div className='editFormContainer'>
         <input
+          className='editFormContainerInput'
           type="text"
           value={taskValue}
           id={item.id}
@@ -88,11 +112,17 @@ export default function Todo({
           onChange={handleChange}
           onKeyDown={handleUpdateEnter}
         />
-        <button onClick={handleUpdate}>Update</button>
-        <button onClick={handleCancel}>Cancel</button>
+        <span className='itemButtons'>
+          <button  onClick={handleUpdate}>
+            <FaCheck className='itemButtonsIconEdit' />
+          </button>
+          <button onClick={handleCancel}>
+            <GiCancel className='itemButtonsIconDelete' />
+          </button>
+        </span>
       </div>
     );
   }
 
-  return <li>{isEditing ? <FormEdit /> : <Task />}</li>;
+  return <li className='todoItemContainer' ref={itemRef}>{isEditing ? <FormEdit /> : <Task />}</li>;
 }

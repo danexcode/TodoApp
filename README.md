@@ -2,4 +2,4 @@
 
 1. Usar operador ternario para dar una clase dependiendo de un estado de React
 
-2. Practicar mis habilidades
+2. Practicar mis habilidades de React y CSS
